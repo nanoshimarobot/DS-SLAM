@@ -1,0 +1,21 @@
+<launch>  
+
+<param name ="/use_sim_time" value="true"/>
+
+<arg name="dataset" value="/root/Dataset/TUM/freiburg3/rgbd_dataset_freiburg3_walking_halfsphere" />
+<arg name="associate" value="/root/Dataset/TUM/freiburg3/rgbd_dataset_freiburg3_walking_halfsphere/associations.txt" />
+
+<arg name="voc" value="$(find ORB_SLAM2_PointMap_SegNetM)/../../../Vocabulary/ORBvoc.bin" />
+<arg name="config" value="$(find ORB_SLAM2_PointMap_SegNetM)/tum_bag.yaml" />
+<arg name="prototxt" value="$(find ORB_SLAM2_PointMap_SegNetM)/prototxts/segnet_pascal.prototxt" />
+<arg name="model" value="/root/cnnmodel/segnet_pascal.caffemodel" />
+<arg name="color_map" value="$(find ORB_SLAM2_PointMap_SegNetM)/tools/pascal.png" />
+
+<node pkg="ORB_SLAM2_PointMap_SegNetM" name="TUM_bag" type="TUM_bag" args="$(arg voc) $(arg config) $(arg dataset) $(arg associate)  $(arg prototxt) $(arg model) $(arg color_map)" output="screen"  />
+
+<!-- Run other launch file -->
+<include file="$(find ORB_SLAM2_PointMap_SegNetM)/launch/Octomap.launch" />
+<include file="$(find ORB_SLAM2_PointMap_SegNetM)/launch/transform.launch" />
+<node pkg="rviz" name="rviz" type="rviz" args="-d $(find ORB_SLAM2_PointMap_SegNetM)/rviz/ds_slam.rviz" />
+
+</launch>

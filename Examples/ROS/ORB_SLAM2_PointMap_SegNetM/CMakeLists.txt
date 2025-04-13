@@ -1,5 +1,8 @@
-cmake_minimum_required(VERSION 2.4.6)
+cmake_minimum_required(VERSION 3.18)
+#cmake_minimum_required(VERSION 2.4.6)
+project(ORB_SLAM2_PointMap_SegNetM)
 include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+message(STATUS  "ROS_ROOT: $ENV{ROS_ROOT}")
 
 rosbuild_init()
 
@@ -46,7 +49,8 @@ add_definitions(${Caffe_DEFINITIONS})
 find_package(Eigen3 3.1.0 REQUIRED)
 # find_package(Eigen3  REQUIRED)
 find_package(Pangolin REQUIRED)
-find_package( PCL 1.7 REQUIRED )
+#find_package( PCL 1.7 REQUIRED )
+find_package( PCL  REQUIRED )
 find_package( octomap REQUIRED )
 
 include_directories(
@@ -54,6 +58,8 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/../../../
     ${PROJECT_SOURCE_DIR}/../../../include
     ${Pangolin_INCLUDE_DIRS}
+    ${PROJECT_SOURCE_DIR}/../../../Examples/ROS/ORB_SLAM2_PointMap_SegNetM/libsegmentation
+    ${Caffe_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
     ${OCTOMAP_INCLUDE_DIRS}
     # ${PROJECT_SOURCE_DIR}/../../../Examples/ROS/ORB_SLAM2_PointMap_SegNetM/caffe-segnet-cudnn5/include 
@@ -61,11 +67,10 @@ include_directories(
     # /usr/local/include  
     /usr/local/cuda/include  
     # /usr/include
-    ${PROJECT_SOURCE_DIR}/../../../Examples/ROS/ORB_SLAM2_PointMap_SegNetM/libsegmentation
-    ${Caffe_INCLUDE_DIRS}
 )
 
 set( LIBS 
+    ${Caffe_LIBRARIES}
     ${OpenCV_LIBS} 
     ${EIGEN3_LIBS}
     ${Pangolin_LIBRARIES}
@@ -73,12 +78,11 @@ set( LIBS
     ${OCTOMAP_LIBRARIES}
     ${PROJECT_SOURCE_DIR}/../../../Thirdparty/DBoW2/lib/libDBoW2.so
     ${PROJECT_SOURCE_DIR}/../../../Thirdparty/g2o/lib/libg2o.so
+    ${PROJECT_SOURCE_DIR}/../../../Examples/ROS/ORB_SLAM2_PointMap_SegNetM/libsegmentation/build/libsegmentation.so
     ${PROJECT_SOURCE_DIR}/../../../build/libORB_SLAM2_PointMap_SegNetM.so
     # ${PROJECT_SOURCE_DIR}/../../../Examples/ROS/ORB_SLAM2_PointMap_SegNetM/caffe-segnet-cudnn5/lib/libcaffe.so  
-    /usr/lib/x86_64-linux-gnu/libglog.so  
+    /usr/lib/x86_64-linux-gnu/libglog.so 
     -lboost_system
-    ${PROJECT_SOURCE_DIR}/../../../Examples/ROS/ORB_SLAM2_PointMap_SegNetM/libsegmentation/build/libsegmentation.so
-    ${Caffe_LIBRARIES}
 )
 
 

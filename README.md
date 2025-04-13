@@ -2,29 +2,23 @@
 
 <https://www.bilibili.com/video/av59793400?from=search&seid=12598277376962486068>
 
-# Change Log
-
-- support CUDA 10
-- Find caffe (caffe-segnet) package in CMakeList
-- Add docker image
-
 # Build
 
 ## Environment
 - Ubuntu 16.04 (Some problems in Ubuntu 18)
 - ROS Kinetic
-- Cuda 10.0
+- Cuda 11.3
 - Cudnn 7
 - Caffe (SegNet)
 - Eigen 3
 - OpenCV 3
-- [optional] docker: 19.03.12 
+- [optional] docker and nvidia-docker
 
 ## Build and install *caffe-segnet-cudnn5*
 
 ```sh
 git clone https://github.com/yubaoliu/caffe-segnet.git 
-cd SegNet/caffe-segnet
+cd caffe-segnet
 mkdir build
 cd build
 cmake .. -CMAKE_INSTALL_PREFIX=/usr/local
@@ -63,9 +57,12 @@ prototxts and tools.
 # Run
 
 Customize dataset and associate path in launch file
+- dataset
+- associate
+- model
 
 ```sh
-roslaunch fr3_walk_half.launch
+roslaunch docker_demo.launch
 ```
 
 # Docker
@@ -75,4 +72,3 @@ docker-compose build
 docker-compose up
 
 ```
-

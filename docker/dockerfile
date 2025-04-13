@@ -1,12 +1,14 @@
-FROM yubaoliu/root:ros-cuda10.0-cudnn7-ubuntu16.04
+# FROM yubaoliu/root:ros-cuda10.0-cudnn7-ubuntu16.04
+FROM slamai/ubuntu16:cuda11.3.0
 
-RUN apt update \
-    &&  apt install -f \
-    && apt install -y  libglew-dev \
+# RUN rm /etc/apt/sources.list.d/cuda.list
+
+RUN sudo apt update \
+    &&  sudo apt install -f \
+    && sudo apt install -y -f libglew-dev \
        libxkbcommon-dev \
        cmake-qt-gui \
        libgoogle-glog-dev \
-       ros-kinetic-octomap-ros \
        libatlas-base-dev \
        libgflags-dev \
        libhdf5-serial-dev \
@@ -20,34 +22,36 @@ RUN apt update \
        python-tk \
        libeigen3-dev
 
+# ros-kinetic-octomap-ros \
+       
 ## update pip
-RUN curl -kL https://bootstrap.pypa.io/get-pip.py | python  \
-    && curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
- 
+# RUN curl -kL   https://bootstrap.pypa.io/pip/2.7/get-pip.py | python2.7  \
+#     && curl -kL https://bootstrap.pypa.io/get-pip.py | python3 
+# RUN pip3 install --upgrade pip 
+
 ## coco API
-RUN pip2 install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI
-RUN pip3 install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI
+# RUN pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI
 
-# Install mask rcnn dependencies
-COPY requirements.txt /root/requirements.txt
-RUN  pip2 install  -r /root/requirements.txt --ignore-installed enum34
-RUN  pip3 install  -r /root/requirements.txt
+# RUN pip3 install "git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI"
 
-WORKDIR /root/
+# Install SegNet dependencies
+COPY docker/requirements.txt /root/requirements.txt
+# RUN  pip2 install  -r /root/requirements.txt --ignore-installed enum34
+# RUN  pip install  -r /root/requirements.txt
 
-# Download Maskrcnn modle
-RUN mkdir /root/cnnmodel \
-   && cd /root/cnnmodel \
-   && wget -c http://mi.eng.cam.ac.uk/~agk34/resources/SegNet/segnet_pascal.caffemodel
+# WORKDIR /home/ubuntu/
 
 #Pangolin
 RUN git clone https://github.com/stevenlovegrove/Pangolin.git \
     && cd Pangolin \
+    && git checkout v0.6 \
     && mkdir build \
     && cd build \
     && cmake .. -DCMAKE_BUILD_TYPE=Debug \
     && make -j 3 \
-    && make install
+    && sudo make install
+
+# RUN sudo apt install -f -y libepoxy-dev \
 
 ## Sophus
 #RUN git clone https://github.com/yubaoliu/Sophus.git \
@@ -75,9 +79,11 @@ RUN git clone https://github.com/stevenlovegrove/Pangolin.git \
 #RUN cd /root \
 #    && svn checkout https://svncvpr.in.tum.de/cvpr-ros-pkg/trunk/rgbd_benchmark/rgbd_benchmark_tools
 
+# RUN git clone https://github.com/yubaoliu/DS-SLAM.git \
+#     && cd DS-SLAM  \
+#     && chmod +x DS_SLAM_BUILD.sh \
+#     && ./DS_SLAM_BUILD.sh
 
-## Caffe-SegNet
-RUN  git clone https://github.com/yubaoliu/caffe-segnet.git
 #RUN  git clone https://github.com/yubaoliu/caffe-segnet.git \
 #    && cd caffe-segnet \
 #    && mkdir build  \
@@ -86,18 +92,59 @@ RUN  git clone https://github.com/yubaoliu/caffe-segnet.git
 #    && make -j2 \
 #    && make install 
 
+# Download SegNet modle
+# RUN mkdir /root/cnnmodel \
+#    && cd /root/cnnmodel \
+#       && wget -c http://mi.eng.cam.ac.uk/~agk34/resources/SegNet/segnet_pascal.caffemodel
 
-WORKDIR /root/catkin_ws/src
+
+# WORKDIR /home/ubuntu/catkin_ws/src
+
+RUN sudo apt-get install -y ros-kinetic-octomap ros-kinetic-octomap-mapping ros-kinetic-octomap-msgs ros-kinetic-octomap-ros ros-kinetic-octomap-rviz-plugins ros-kinetic-octomap-server
+
+# RUN sudo apt-get install -y ros-kinetic-octomap ros-kinetic-octomap-mapping ros-kinetic-octomap-msgs ros-kinetic-octomap-ros ros-kinetic-octomap-rviz-plugins ros-kinetic-octomap-server
+
 # Octomap
-RUN git clone https://github.com/yubaoliu/octomap_mapping.git \
-    && git clone https://github.com/yubaoliu/octomap_rviz_plugins.git 
-#    && cd /root/catkin_ws \
-#    && /bin/bash -c "source /opt/ros/kinetic/setup.bash & catkin_make"
+# RUN git clone https://github.com/OctoMap/octomap_mapping.git \
+#     && chmod +x octomap_mapping/octomap_server/cfg/OctomapServer.cfg
+# 
+# RUN git clone https://github.com/OctoMap/octomap_rviz_plugins.git
+
+
+# RUN cd /root/catkin_ws \
+#     && /bin/bash -c "source /opt/ros/kinetic/setup.bash & catkin_make"
+
+# cd /root/catkin_ws 
+# chmod +x /root/catkin_ws/src/octomap_mapping/octomap_server/cfg/OctomapServer.cfg
+# catkin_make
+
+RUN rosdep update
+
+RUN sudo apt update \
+    && sudo apt install -y -f rospack-tools \
+    ros-kinetic-tf2-msgs \
+    ros-kinetic-image-transport \
+    ros-kinetic-pcl-ros \
+    ros-kinetic-nav-msgs
+
+# COPY caffe-segnet /home/ubuntu/caffe-segnet
+
+# Caffe-SegNet
+RUN git clone https://github.com/yubaoliu/caffe-segnet.git \
+    && cd caffe-segnet \
+    && [ ! -d "build" ] && mkdir build  \
+    && cd build \
+    && cmake .. -DCMAKE_BUILD_TYPE=Release  -DCMAKE_INSTALL_PREFIX=/usr/local \
+    && make -j2 \
+    && sudo make install
+
+
+RUN echo "ROS_PACKAGE_PATH=/opt/ros/kinetic/share:$HOME/catkin_ws/src/DS-SLAM/Examples/ROS/ORB_SLAM2_PointMap_SegNetM" >> /root/.bashrc
 
 # # Load ROS environment at each run
-COPY ./ros_entrypoint.sh /
-RUN chmod 755 /ros_entrypoint.sh
-ENTRYPOINT ["/ros_entrypoint.sh"]
+COPY ./docker/ros_entrypoint.sh /root/ros_entrypoint.sh
+RUN sudo chmod 755 /root/ros_entrypoint.sh
+ENTRYPOINT ["/root/ros_entrypoint.sh"]
 
 
 CMD ["bash"]

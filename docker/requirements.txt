@@ -6,10 +6,10 @@ matplotlib
 scikit-image
 tensorflow-gpu==1.14.0
 keras==2.0.8
-opencv-python==3.3.1.11
+opencv-python==3.4.0.12
 h5py
 imageio==2.6.1
 imgaug
-IPython[all]
+#IPython[all]
 pandas
 future

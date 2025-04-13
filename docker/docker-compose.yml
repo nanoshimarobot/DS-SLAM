@@ -1,9 +1,10 @@
 version: '2.3'
 services:
   dsslam:
-    image: yubaoliu/ds_slam:kinetic
+    image: slamai/ds_slam:latest
     build:
-        context: .
+        context: ..
+        dockerfile: docker/dockerfile
     container_name: dsslam
     privileged: true
     runtime: nvidia
@@ -12,12 +13,15 @@ services:
     environment:
         - DISPLAY
         - QT_X11_NO_MITSHM=1
+    devices:
+        - /dev/dri
     volumes:
         - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        # - /home/qingbao/Project/caffe-segnet:/root/caffe-segnet
         - ../:/root/catkin_ws/src/DS-SLAM
         - ${DATASET_DIR}:/root/Dataset
-        # - orbslam3:/root
+        # - dsslam:/root
     network_mode: host
-    entrypoint: /ros_entrypoint.sh
+    entrypoint: /root/ros_entrypoint.sh
 # volumes:
-     # dsslam:
+#      dsslam:
