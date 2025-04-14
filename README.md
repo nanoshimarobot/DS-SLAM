@@ -54,17 +54,6 @@ https://drive.google.com/file/d/1KzyEpaLovCyDKEj-LkAGTT6l-s3IRpSG/view?usp=shari
 Please download and place the folder in the same path with the folder of
 prototxts and tools.
 
-# Run
-
-Customize dataset and associate path in launch file
-- dataset
-- associate
-- model
-
-```sh
-roslaunch docker_demo.launch
-```
-
 # Docker
 
 ```sh
@@ -72,3 +61,34 @@ docker-compose build
 docker-compose up
 
 ```
+# Run
+- Enable display
+
+```sh
+xhost +local:root 
+```
+- Build Octomap Server
+
+```sh
+cd /root/catkin_ws
+source /opt/ros/kinetic/setup.zsh
+catkin_make
+source /root/catkin_ws/devel/setup.zsh
+```
+- Build SLAM
+
+```sh
+cd /root/catkin_ws/src/DS-SLAM
+DS_SLAM_BUILD.sh
+```
+
+- Run demo
+Customize dataset and associate path in launch file
+- dataset
+- associate
+- model
+```sh
+roslaunch docker_demo.launch
+```
+
+

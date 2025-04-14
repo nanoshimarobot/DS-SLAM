@@ -1,5 +1,6 @@
 *.caffemodel
 Examples/ROS/ORB_SLAM2_PointMap_SegNetM/TUM
+Examples/ROS/ORB_SLAM2_PointMap_SegNetM/TUM_bag
 caffe-segnet-cudnn5
 
 # Created by https://www.gitignore.io/api/ros,cmake,emacs,pycharm,visualstudiocode

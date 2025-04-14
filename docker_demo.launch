@@ -12,7 +12,7 @@
 
 <arg name="model" value="/root/Dataset/Models/segnet_pascal.caffemodel" />
 
-<node pkg="ORB_SLAM2_PointMap_SegNetM" name="TUM" type="TUM" args="$(arg voc) $(arg config) $(arg dataset) $(arg associate)  $(arg prototxt) $(arg model) $(arg color_map)" output="screen"  launch-prefix="gdb -ex run --args"  />
+<node pkg="ORB_SLAM2_PointMap_SegNetM" name="TUM" type="TUM" args="$(arg voc) $(arg config) $(arg dataset) $(arg associate)  $(arg prototxt) $(arg model) $(arg color_map)" output="screen" />
 
 <!-- Run other launch file -->
 <include file="$(find ORB_SLAM2_PointMap_SegNetM)/launch/Octomap.launch" />

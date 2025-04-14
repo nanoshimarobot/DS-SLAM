@@ -97,10 +97,9 @@ RUN git clone https://github.com/stevenlovegrove/Pangolin.git \
 #    && cd /root/cnnmodel \
 #       && wget -c http://mi.eng.cam.ac.uk/~agk34/resources/SegNet/segnet_pascal.caffemodel
 
+RUN sudo apt-get install -y xcb
 
-# WORKDIR /home/ubuntu/catkin_ws/src
-
-RUN sudo apt-get install -y ros-kinetic-octomap ros-kinetic-octomap-mapping ros-kinetic-octomap-msgs ros-kinetic-octomap-ros ros-kinetic-octomap-rviz-plugins ros-kinetic-octomap-server
+# RUN sudo apt-get install -y ros-kinetic-octomap ros-kinetic-octomap-mapping ros-kinetic-octomap-msgs ros-kinetic-octomap-ros ros-kinetic-octomap-rviz-plugins ros-kinetic-octomap-server
 
 # RUN sudo apt-get install -y ros-kinetic-octomap ros-kinetic-octomap-mapping ros-kinetic-octomap-msgs ros-kinetic-octomap-ros ros-kinetic-octomap-rviz-plugins ros-kinetic-octomap-server
 
@@ -139,12 +138,38 @@ RUN git clone https://github.com/yubaoliu/caffe-segnet.git \
     && sudo make install
 
 
-RUN echo "ROS_PACKAGE_PATH=/opt/ros/kinetic/share:$HOME/catkin_ws/src/DS-SLAM/Examples/ROS/ORB_SLAM2_PointMap_SegNetM" >> /root/.bashrc
+RUN sudo ln -fs /bin/bash /bin/sh
+RUN echo 'export __NV_PRIME_RENDER_OFFLOAD=1' >> ~/.zshrc \
+    && echo 'export __GLX_VENDOR_LIBRARY_NAME=nvidia' >> ~/.zshrc
+
+
+RUN cd /root/catkin_ws/src \
+    && git clone https://github.com/OctoMap/octomap_mapping.git \
+    && cd octomap_mapping \
+    && git checkout bd66bc1f024f6d77ec2ad175d15c82746063c301 \
+    && sed -i '29i #define COLOR_OCTOMAP_SERVER'  octomap_server/include/octomap_server/OctomapServer.h
+
+RUN cd /root/catkin_ws/src \
+    && git clone https://github.com/OctoMap/octomap_rviz_plugins.git  \
+    && cd octomap_rviz_plugins \
+    && git checkout c8eafdb7a846eb11853c789d091551cedf86089b 
+
+# RUN /bin/bash -c "cd /root/catkin_ws/ && source /opt/ros/kinetic/setup.sh && catkin_make"
+
+RUN sudo apt-get install -y ros-kinetic-octomap  ros-kinetic-octomap-ros
+
+RUN ["/bin/bash", "-c", "cd /root/catkin_ws && source /opt/ros/kinetic/setup.bash && catkin_make"]
 
 # # Load ROS environment at each run
 COPY ./docker/ros_entrypoint.sh /root/ros_entrypoint.sh
 RUN sudo chmod 755 /root/ros_entrypoint.sh
 ENTRYPOINT ["/root/ros_entrypoint.sh"]
 
+# ENV NVIDIA_VISIBLE_DEVICES \
+# ${NVIDIA_VISIBLE_DEVICES:-all}
+# ENV NVIDIA_DRIVER_CAPABILITIES \
+# ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
+
+ENV NVIDIA_DRIVER_CAPABILITIES compute,display,graphics,utility,video
 
 CMD ["bash"]
