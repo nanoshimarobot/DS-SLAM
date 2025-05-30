@@ -5,11 +5,12 @@ services:
     build:
         context: ..
         dockerfile: docker/dockerfile
+        args:
+            - ROS_DISTRO=melodic
     container_name: dsslam
     privileged: true
     runtime: nvidia
-    command: xterm
-         # lxterminal
+    command: lxterminal
     environment:
         - DISPLAY=$DISPLAY
         - QT_X11_NO_MITSHM=1

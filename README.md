@@ -79,7 +79,7 @@ source /root/catkin_ws/devel/setup.zsh
 
 ```sh
 cd /root/catkin_ws/src/DS-SLAM
-DS_SLAM_BUILD.sh
+./DS_SLAM_BUILD.sh
 ```
 
 - Run demo
@@ -92,3 +92,5 @@ roslaunch docker_demo.launch
 ```
 
 
+# References
+- https://developer.nvidia.com/cuda-gpus

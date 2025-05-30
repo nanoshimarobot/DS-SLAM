@@ -1,5 +1,6 @@
 # FROM yubaoliu/root:ros-cuda10.0-cudnn7-ubuntu16.04
-FROM slamai/ubuntu16:cuda11.3.0
+# FROM slamai/ubuntu16:cuda11.3.0
+FROM slamai/ubuntu18:cuda12.0.1
 
 # RUN rm /etc/apt/sources.list.d/cuda.list
 
@@ -121,27 +122,15 @@ RUN rosdep update
 
 RUN sudo apt update \
     && sudo apt install -y -f rospack-tools \
-    ros-kinetic-tf2-msgs \
-    ros-kinetic-image-transport \
-    ros-kinetic-pcl-ros \
-    ros-kinetic-nav-msgs
-
-# COPY caffe-segnet /home/ubuntu/caffe-segnet
-
-# Caffe-SegNet
-RUN git clone https://github.com/yubaoliu/caffe-segnet.git \
-    && cd caffe-segnet \
-    && [ ! -d "build" ] && mkdir build  \
-    && cd build \
-    && cmake .. -DCMAKE_BUILD_TYPE=Release  -DCMAKE_INSTALL_PREFIX=/usr/local \
-    && make -j2 \
-    && sudo make install
+    ros-${ROS_DISTRO}-tf2-msgs \
+    ros-${ROS_DISTRO}-image-transport \
+    ros-${ROS_DISTRO}-pcl-ros \
+    ros-${ROS_DISTRO}-nav-msgs
 
 
 RUN sudo ln -fs /bin/bash /bin/sh
 RUN echo 'export __NV_PRIME_RENDER_OFFLOAD=1' >> ~/.zshrc \
     && echo 'export __GLX_VENDOR_LIBRARY_NAME=nvidia' >> ~/.zshrc
-
 
 RUN cd /root/catkin_ws/src \
     && git clone https://github.com/OctoMap/octomap_mapping.git \
@@ -156,11 +145,22 @@ RUN cd /root/catkin_ws/src \
 
 # RUN /bin/bash -c "cd /root/catkin_ws/ && source /opt/ros/kinetic/setup.sh && catkin_make"
 
-RUN sudo apt-get install -y ros-kinetic-octomap  ros-kinetic-octomap-ros
+RUN sudo apt-get install -y ros-${ROS_DISTRO}-octomap  ros-${ROS_DISTRO}-octomap-ros
 
-RUN ["/bin/bash", "-c", "cd /root/catkin_ws && source /opt/ros/kinetic/setup.bash && catkin_make"]
+RUN ["/bin/bash", "-c", "cd /root/catkin_ws && source /opt/ros/${ROS_DISTRO}/setup.bash && catkin_make"]
 
-# # Load ROS environment at each run
+COPY TEMPT/caffe-segnet /root/caffe-segnet
+
+# Caffe-SegNet
+# RUN git clone https://github.com/yubaoliu/caffe-segnet.git /root/caffe-segnet \
+RUN cd /root/caffe-segnet \
+    && [ ! -d "build" ] && mkdir build  \
+    && cd build \
+    && cmake .. -DCMAKE_BUILD_TYPE=Release  -DCMAKE_INSTALL_PREFIX=/usr/local -DUSE_CUDNN=OFF \
+    && make -j2 \
+    && sudo make install
+
+# Load ROS environment at each run
 COPY ./docker/ros_entrypoint.sh /root/ros_entrypoint.sh
 RUN sudo chmod 755 /root/ros_entrypoint.sh
 ENTRYPOINT ["/root/ros_entrypoint.sh"]
@@ -170,6 +170,6 @@ ENTRYPOINT ["/root/ros_entrypoint.sh"]
 # ENV NVIDIA_DRIVER_CAPABILITIES \
 # ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
 
-ENV NVIDIA_DRIVER_CAPABILITIES compute,display,graphics,utility,video
+# ENV NVIDIA_DRIVER_CAPABILITIES compute,display,graphics,utility,video
 
 CMD ["bash"]
