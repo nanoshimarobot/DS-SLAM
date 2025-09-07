@@ -91,6 +91,11 @@ Customize dataset and associate path in launch file
 roslaunch docker_demo.launch
 ```
 
+- In case of runtime error  
+  - Remove && Reinstall Eigen3
+    - Do not uninstall libeigen3-dev
+    - Just remove /usr/include/eigen3 && relocate
+    - Eigen3.3.4 -> Eigen3.2.9
 
 # References
 - https://developer.nvidia.com/cuda-gpus
