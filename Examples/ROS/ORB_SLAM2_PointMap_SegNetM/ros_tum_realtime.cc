@@ -72,7 +72,7 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "TUM");
     ros::start();
 
-    if (argc != 8) {
+    if (argc != 9) {
         cerr << endl
              << "Usage: TUM path_to_vocabulary path_to_settings path_to_sequence path_to_association path_to_prototxt path_to_caffemodel path_to_pascal.png" << endl;
         return 1;
@@ -116,6 +116,8 @@ int main(int argc, char** argv)
     cout << "Start processing sequence ..." << endl;
     cout << "Images in the sequence: " << nImages << endl
          << endl;
+
+    // cout << "args[8]: " << string(argv[8]) << endl;
 
     // Main loop
     cv::Mat imRGB, imD;
@@ -195,9 +197,13 @@ int main(int argc, char** argv)
     cout << "mean moving detection time =" << movingTotalTime / nImages << endl;
     cout << "mean segmentation time =" << segmentationTime / nImages << endl;
 
+    std::string input_ds_dir = string(argv[8]);
+    std::string output_cam_traj_file = input_ds_dir + "/CameraTrajectory.txt";
+    std::string output_kf_traj_file = input_ds_dir + "/KeyFrameTrajectory.txt";
+
     // Save camera trajectory
-    SLAM.SaveTrajectoryTUM("/root/Dataset/CameraTrajectory.txt");
-    SLAM.SaveKeyFrameTrajectoryTUM("/root/Dataset/KeyFrameTrajectory.txt");
+    SLAM.SaveTrajectoryTUM(output_cam_traj_file);
+    SLAM.SaveKeyFrameTrajectoryTUM(output_kf_traj_file);
 
     ros::shutdown();
     return 0;
