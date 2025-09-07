@@ -41,6 +41,7 @@ COPY docker/requirements.txt /root/requirements.txt
 # RUN  pip install  -r /root/requirements.txt
 
 # WORKDIR /home/ubuntu/
+RUN apt-get update && apt-get install -y libepoxy-dev
 
 #Pangolin
 RUN git clone https://github.com/stevenlovegrove/Pangolin.git \
@@ -149,14 +150,16 @@ RUN sudo apt-get install -y ros-${ROS_DISTRO}-octomap  ros-${ROS_DISTRO}-octomap
 
 RUN ["/bin/bash", "-c", "cd /root/catkin_ws && source /opt/ros/${ROS_DISTRO}/setup.bash && catkin_make"]
 
-COPY TEMPT/caffe-segnet /root/caffe-segnet
+# COPY TEMPT/caffe-segnet /root/caffe-segnet
 
 # Caffe-SegNet
-# RUN git clone https://github.com/yubaoliu/caffe-segnet.git /root/caffe-segnet \
+RUN export TORCH_CUDA_ARCH_LIST="8.9"
+RUN sudo apt install caffe-cuda -y
+RUN git clone https://github.com/yubaoliu/caffe-segnet.git /root/caffe-segnet
 RUN cd /root/caffe-segnet \
     && [ ! -d "build" ] && mkdir build  \
     && cd build \
-    && cmake .. -DCMAKE_BUILD_TYPE=Release  -DCMAKE_INSTALL_PREFIX=/usr/local -DUSE_CUDNN=OFF \
+    && cmake .. -DCMAKE_BUILD_TYPE=Release  -DCMAKE_INSTALL_PREFIX=/usr/local -DUSE_CUDNN=OFF -DCUDA_ARCH_NAME=Manual -DCUDA_ARCH_BIN="89" -DCUDA_ARCH_PTX="89" \
     && make -j2 \
     && sudo make install
 

@@ -1,4 +1,39 @@
-version: '2.3'
+# version: '2.3'
+# services:
+#   dsslam:
+#     image: slamai/ds_slam:latest
+#     build:
+#         context: ..
+#         dockerfile: docker/dockerfile
+#         args:
+#             - ROS_DISTRO=melodic
+#     container_name: dsslam
+#     privileged: true
+#     runtime: nvidia
+#     command: lxterminal
+#     environment:
+#         - DISPLAY=$DISPLAY
+#         - QT_X11_NO_MITSHM=1
+#         - NVIDIA_VISIBLE_DEVICES=all
+#         - NVIDIA_DRIVER_CAPABILITIES=all
+#     devices:
+#         - /dev/dri
+#     volumes:
+#         - /tmp/.X11-unix:/tmp/.X11-unix:rw
+#         # - /home/qingbao/Project/caffe-segnet:/root/caffe-segnet
+#         - ../:/root/catkin_ws/src/DS-SLAM
+#         - ~/.Xresources:/root/.Xresources
+#         - ${DATASET_DIR}:/root/Dataset
+#         - ~/.Xauthority:/root/.Xauthority
+#         # - dsslam:/root
+#     network_mode: host
+#     entrypoint: /root/ros_entrypoint.sh
+# # volumes:
+# #      dsslam:
+
+# バージョンを新しいものに更新
+version: "3"
+
 services:
   dsslam:
     image: slamai/ds_slam:latest
@@ -9,7 +44,17 @@ services:
             - ROS_DISTRO=melodic
     container_name: dsslam
     privileged: true
-    runtime: nvidia
+    # runtime: nvidia  <- この行を削除
+
+    # ↓↓↓↓ この deploy セクションを丸ごと追加 ↓↓↓↓
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+              
     command: lxterminal
     environment:
         - DISPLAY=$DISPLAY
@@ -20,13 +65,9 @@ services:
         - /dev/dri
     volumes:
         - /tmp/.X11-unix:/tmp/.X11-unix:rw
-        # - /home/qingbao/Project/caffe-segnet:/root/caffe-segnet
         - ../:/root/catkin_ws/src/DS-SLAM
         - ~/.Xresources:/root/.Xresources
-        - ${DATASET_DIR}:/root/Dataset
+        - ~/sandbox_ws/tum_dataset:/root/Dataset
         - ~/.Xauthority:/root/.Xauthority
-        # - dsslam:/root
     network_mode: host
     entrypoint: /root/ros_entrypoint.sh
-# volumes:
-#      dsslam:
