@@ -196,8 +196,8 @@ int main(int argc, char** argv)
     cout << "mean segmentation time =" << segmentationTime / nImages << endl;
 
     // Save camera trajectory
-    SLAM.SaveTrajectoryTUM("CameraTrajectory.txt");
-    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
+    SLAM.SaveTrajectoryTUM("/root/Dataset/CameraTrajectory.txt");
+    SLAM.SaveKeyFrameTrajectoryTUM("/root/Dataset/KeyFrameTrajectory.txt");
 
     ros::shutdown();
     return 0;
