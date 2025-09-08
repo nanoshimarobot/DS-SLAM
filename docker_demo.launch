@@ -2,18 +2,22 @@
 
 <param name ="/use_sim_time" value="false"/>
 
-<arg name="dataset" default="/root/Dataset/rgbd_dataset_freiburg3_walking_static" />
-<arg name="associate" default="/root/Dataset/rgbd_dataset_freiburg3_walking_static/association.txt" />
+<arg name="dataset" default="/root/Dataset/aist_desk_test" />
+<arg name="associate" default="/root/Dataset/aist_desk_test/association.txt" />
+<!-- <arg name="dataset" default="/root/Dataset/rgbd_dataset_freiburg3_sitting_static" /> -->
+<!-- <arg name="associate" default="/root/Dataset/rgbd_dataset_freiburg3_sitting_static/association.txt" /> -->
 
 <arg name="voc" value="$(find ORB_SLAM2_PointMap_SegNetM)/../../../Vocabulary/ORBvoc.bin" />
-<arg name="config" value="$(find ORB_SLAM2_PointMap_SegNetM)/TUM3.yaml" />
+<!-- <arg name="config" value="$(find ORB_SLAM2_PointMap_SegNetM)/TUM3.yaml" /> -->
+<arg name="config" value="$(find ORB_SLAM2_PointMap_SegNetM)/aist.yaml" />
 <arg name="prototxt" value="$(find ORB_SLAM2_PointMap_SegNetM)/prototxts/segnet_pascal.prototxt" />
 <arg name="color_map" value="$(find ORB_SLAM2_PointMap_SegNetM)/tools/pascal.png" />
 
 <arg name="model" value="/root/Dataset/segnet_pascal.caffemodel" />
 
+<!-- launch-prefix="gdb -ex run args"                                                                                                                                                    launch-prefix="gdb -ex run args"                                -->
+<node pkg="ORB_SLAM2_PointMap_SegNetM" name="TUM" type="TUM" args="$(arg voc) $(arg config) $(arg dataset) $(arg associate) $(arg prototxt) $(arg model) $(arg color_map) $(arg dataset)" output="screen" required="true"/> 
 <!-- launch-prefix="gdb -ex run args" -->
-<node pkg="ORB_SLAM2_PointMap_SegNetM" name="TUM" type="TUM" args="$(arg voc) $(arg config) $(arg dataset) $(arg associate) $(arg prototxt) $(arg model) $(arg color_map) $(arg dataset)" output="screen" required="true"/>
 
 <!-- Run other launch file -->
 <include file="$(find ORB_SLAM2_PointMap_SegNetM)/launch/Octomap.launch" />

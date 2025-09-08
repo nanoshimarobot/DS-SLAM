@@ -14,10 +14,12 @@ BASE_DATASET_DIR="/root/Dataset"
 # 処理したいデータセット名のリスト (スペース区切りで列挙)
 # 例: DATASET_NAMES=("rgbd_dataset_freiburg1_xyz" "rgbd_dataset_freiburg2_desk" "...")
 DATASET_NAMES=(
-#   "rgbd_dataset_freiburg3_sitting_static"
-  "rgbd_dataset_freiburg3_walking_static"
+  # "rgbd_dataset_freiburg3_sitting_static"
+  # "rgbd_dataset_freiburg3_walking_xyz"
 #   "rgbd_dataset_freiburg3_sitting_xyz"
   # ここに他のデータセット名を追加
+  # "aist_desk_test"
+  "aist_ws_test"
 )
 
 # 実行するlaunchファイルの情報
