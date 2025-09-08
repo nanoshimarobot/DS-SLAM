@@ -82,7 +82,7 @@ public:
     void public_cloud( pcl::PointCloud<pcl::PointXYZRGBA> &cloud_kf);
 
 protected:
-    PointCloud::Ptr generatePointCloud(KeyFrame* kf, cv::Mat& semantic_color,cv::Mat& semantic, cv::Mat& color, cv::Mat& depth);
+    PointCloud::Ptr generatePointCloud(cv::Mat& keyframe_pose, cv::Mat& semantic_color,cv::Mat& semantic, cv::Mat& color, cv::Mat& depth);
 
     PointCloud::Ptr globalMap;
 
@@ -97,6 +97,7 @@ protected:
 
     // Data to generate point clouds
     std::vector<KeyFrame*>       keyframes;
+    std::vector<cv::Mat>         keyframe_poses;
     std::vector<cv::Mat>         semanticImgs;
     std::vector<cv::Mat>         semanticImgs_color;
     std::vector<cv::Mat>         colorImgs;

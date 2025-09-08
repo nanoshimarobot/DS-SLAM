@@ -24,11 +24,11 @@
  * Chao Yu, Zuxin Liu, Xinjun Liu, Fugui Xie, Yi Yang, Qi Wei, Fei Qiao qiaofei@mail.tsinghua.edu.cn
  * Created by Yu Chao@2018.12.03
  * --------------------------------------------------------------------------------------------------
- * DS-SLAM is a optimized SLAM system based on the famous ORB-SLAM2. If you haven't learn ORB_SLAM2 code, 
- * you'd better to be familiar with ORB_SLAM2 project first. Compared to ORB_SLAM2, 
- * we add anther two threads including semantic segmentation thread and densemap creation thread. 
+ * DS-SLAM is a optimized SLAM system based on the famous ORB-SLAM2. If you haven't learn ORB_SLAM2 code,
+ * you'd better to be familiar with ORB_SLAM2 project first. Compared to ORB_SLAM2,
+ * we add anther two threads including semantic segmentation thread and densemap creation thread.
  * You should pay attention to Frame.cc, ORBmatcher.cc, Pointcloudmapping.cc and Segment.cc.
- * 
+ *
  *　@article{murORB2,
  *　title={{ORB-SLAM2}: an Open-Source {SLAM} System for Monocular, Stereo and {RGB-D} Cameras},
 　*　author={Mur-Artal, Ra\'ul and Tard\'os, Juan D.},
@@ -40,7 +40,7 @@
 　* year={2017}
  *　}
  * --------------------------------------------------------------------------------------------------
- * Copyright (C) 2018, iVip Lab @ EE, THU (https://ivip-tsinghua.github.io/iViP-Homepage/) and 
+ * Copyright (C) 2018, iVip Lab @ EE, THU (https://ivip-tsinghua.github.io/iViP-Homepage/) and
  * Advanced Mechanism and Roboticized Equipment Lab. All rights reserved.
  *
  * Licensed under the GPLv3 License;
@@ -58,7 +58,7 @@
 
 pcl::PointCloud<pcl::PointXYZRGBA> pcl_filter;
 ros::Publisher pclPoint_pub;
-ros::Publisher octomap_pub; //not used
+ros::Publisher octomap_pub; // not used
 sensor_msgs::PointCloud2 pcl_point;
 
 pcl::PointCloud<pcl::PointXYZRGBA> pcl_cloud_kf;
@@ -88,7 +88,7 @@ void PointCloudMapping::insertKeyFrame(KeyFrame *kf, cv::Mat &semantic_color, cv
 {
 
     unique_lock<mutex> lck(keyframeMutex);
-    keyframes.push_back(kf);
+    keyframe_poses.push_back(kf->GetPose().clone());
     semanticImgs.push_back(semantic.clone());
     semanticImgs_color.push_back(semantic_color.clone());
     colorImgs.push_back(color.clone());
@@ -97,9 +97,9 @@ void PointCloudMapping::insertKeyFrame(KeyFrame *kf, cv::Mat &semantic_color, cv
     keyFrameUpdated.notify_one();
 }
 
-pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePointCloud(KeyFrame *kf, cv::Mat &semantic_color, cv::Mat &semantic, cv::Mat &color, cv::Mat &depth)
+pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePointCloud(cv::Mat &keyframe_pose, cv::Mat &semantic_color, cv::Mat &semantic, cv::Mat &color, cv::Mat &depth)
 {
-
+    // abort();
     PointCloud::Ptr tmp(new PointCloud());
     // Point cloud is null ptr
     for (int m = 0; m < depth.rows; m += 1)
@@ -126,10 +126,20 @@ pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePoint
                         tempy = 0;
                     if (tempy >= (Camera::width - 1))
                         tempy = Camera::width - 1;
-                    if ((int)semantic.ptr<uchar>(tempx)[tempy] == PEOPLE_LABLE)
+                    // 座標スケーリングの計算
+                    float scale_row = (float)semantic.rows / (float)depth.rows;
+                    float scale_col = (float)semantic.cols / (float)depth.cols;
+                    int semantic_row = m * scale_row;
+                    int semantic_col = n * scale_col;
+
+                    // 安全な範囲チェック
+                    if (semantic_row >= 0 && semantic_row < semantic.rows && semantic_col >= 0 && semantic_col < semantic.cols)
                     {
-                        flag_exist = 1;
-                        break;
+                        if ((int)semantic.ptr<uchar>(semantic_row)[semantic_col] == PEOPLE_LABLE)
+                        {   
+                            flag_exist = 1; // 人の点は追加しない
+                            break;
+                        }
                     }
                 }
                 if (flag_exist == 1)
@@ -161,18 +171,17 @@ pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePoint
         }
     }
 
-    Eigen::Isometry3d T = ORB_SLAM2::Converter::toSE3Quat(kf->GetPose());
+    Eigen::Isometry3d T = ORB_SLAM2::Converter::toSE3Quat(keyframe_pose);
     PointCloud::Ptr cloud(new PointCloud);
     pcl::transformPointCloud(*tmp, *cloud, T.inverse().matrix());
     cloud->is_dense = false;
-
-    cout << "Generate point cloud for kf " << kf->mnId << ", size=" << cloud->points.size() << endl;
+    // abort();
+    // cout << "Generate point cloud for kf " << kf->mnId << ", size=" << cloud->points.size() << endl;
     return cloud;
 }
 
 void PointCloudMapping::viewer()
 {
-
     ros::NodeHandle n;
     pclPoint_pub = n.advertise<sensor_msgs::PointCloud2>("/ORB_SLAM2_PointMap_SegNetM/Point_Clouds", 100000);
     ros::Rate r(5);
@@ -193,7 +202,8 @@ void PointCloudMapping::viewer()
         size_t N = 0;
         {
             unique_lock<mutex> lck(keyframeMutex);
-            N = keyframes.size();
+            // N = keyframes.size();
+            N = keyframe_poses.size();
         }
         if (N == 0)
         {
@@ -202,9 +212,10 @@ void PointCloudMapping::viewer()
             continue;
         }
         KfMap->clear();
+        // abort();
         for (size_t i = lastKeyframeSize; i < N; i++)
         {
-            PointCloud::Ptr p = generatePointCloud(keyframes[i], semanticImgs_color[i], semanticImgs[i], colorImgs[i], depthImgs[i]);
+            PointCloud::Ptr p = generatePointCloud(keyframe_poses[i], semanticImgs_color[i], semanticImgs[i], colorImgs[i], depthImgs[i]);
             *KfMap += *p;
             *globalMap += *p;
         }
@@ -236,7 +247,8 @@ void PointCloudMapping::Cloud_transform(pcl::PointCloud<pcl::PointXYZRGBA> &sour
 
     m << 0, 0, 1, 0,
         -1, 0, 0, 0,
-        0, -1, 0, 0;
+        0, -1, 0, 0,
+        0, 0, 0, 1;
     Eigen::Affine3f transform(m);
     pcl::transformPointCloud(source, out, transform);
 }

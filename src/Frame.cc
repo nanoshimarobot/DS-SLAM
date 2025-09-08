@@ -790,6 +790,16 @@ void Frame::ComputeStereoMatches()
 
 void Frame::ComputeStereoFromRGBD(const cv::Mat &imDepth)
 {
+    // ↓↓↓↓ このデバッグコードを挿入 ↓↓↓↓
+    std::cout << "--- Debugging imDepth in ComputeStereoFromRGBD ---" << std::endl;
+    std::cout << "Image Size (Rows x Cols): " << imDepth.rows << " x " << imDepth.cols << std::endl;
+    std::cout << "Image Type (OpenCV): " << imDepth.type() << std::endl;
+    // CV_32F (float) should be 5. CV_16U (unsigned short) is 2.
+    if(imDepth.type() != 5) {
+        std::cout << "!!!!!! WARNING: Image type is NOT float (CV_32F) !!!!!!" << std::endl;
+    }
+    std::cout << "----------------------------------------------------" << std::endl;
+    // ↑↑↑↑ ここまで挿入 ↑↑↑↑
     mvuRight = vector<float>(N, -1);
     mvDepth = vector<float>(N, -1);
 
