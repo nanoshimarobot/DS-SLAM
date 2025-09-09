@@ -97,8 +97,14 @@ void PointCloudMapping::insertKeyFrame(KeyFrame *kf, cv::Mat &semantic_color, cv
     keyFrameUpdated.notify_one();
 }
 
-pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePointCloud(cv::Mat &keyframe_pose, cv::Mat &semantic_color, cv::Mat &semantic, cv::Mat &color, cv::Mat &depth)
+pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePointCloud(cv::Mat keyframe_pose, cv::Mat semantic_color, cv::Mat semantic, cv::Mat color, cv::Mat depth)
 {
+    // if (semantic_color.rows == 0 || semantic_color.cols == 0 || semantic.rows == 0 || semantic.cols == 0 || color.rows == 0 || color.cols == 0 || depth.rows == 0 || depth.cols == 0)
+    // {
+    //     std::cout << "!!!!!! WARNING: semantic_color or semantic image is empty !!!!!!" << std::endl;
+    //     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_null(new pcl::PointCloud<pcl::PointXYZRGBA>());
+    //     return cloud_null;
+    // }
     // abort();
     PointCloud::Ptr tmp(new PointCloud());
     // Point cloud is null ptr
@@ -135,8 +141,8 @@ pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePoint
                     // 安全な範囲チェック
                     if (semantic_row >= 0 && semantic_row < semantic.rows && semantic_col >= 0 && semantic_col < semantic.cols)
                     {
-                        if ((int)semantic.ptr<uchar>(semantic_row)[semantic_col] == PEOPLE_LABLE)
-                        {   
+                        if ((int)semantic.at<uchar>(semantic_row, semantic_col) == PEOPLE_LABLE)
+                        {
                             flag_exist = 1; // 人の点は追加しない
                             break;
                         }
@@ -154,20 +160,73 @@ pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePoint
             p.x = (n - Camera::cx) * p.z / Camera::fx;
             p.y = (m - Camera::cy) * p.z / Camera::fy;
 
+            // ↓↓↓↓ ここから修正・追加 ↓↓↓↓
+
+            // スケール計算：深度画像とセマンティック画像の解像度の比率を計算
+            float scale_row = (float)semantic.rows / (float)depth.rows;
+            float scale_col = (float)semantic.cols / (float)depth.cols;
+
+            // 座標をスケーリング
+            int semantic_row = m * scale_row;
+            int semantic_col = n * scale_col;
+
+            // 安全のため、スケーリング後の座標が画像の範囲内にあるかチェック
+
             // Deal with color
-            if ((int)semantic.ptr<uchar>(m)[n] == 0)
+            // スケーリングした座標を使ってsemantic画像にアクセス
+            // if ((int)semantic.ptr<uchar>(semantic_row)[semantic_col] == 0)
+            // {
+            //     p.b = color.ptr<uchar>(m)[n * 3];
+            //     p.g = color.ptr<uchar>(m)[n * 3 + 1];
+            //     p.r = color.ptr<uchar>(m)[n * 3 + 2];
+            // }
+            // else
+            // {
+            //     // ... (else 以下の処理も同様) ...
+            // }
+            // tmp->points.push_back(p);
+            // if (semantic_row >= 0 && semantic_row < semantic.rows && semantic_col >= 0 && semantic_col < semantic.cols)
+            // {
+
+            // if (semantic_color.rows == 0 || semantic_color.cols == 0 || semantic.rows == 0 || semantic.cols == 0 || color.rows == 0 || color.cols == 0 || depth.rows == 0 || depth.cols == 0)
+            // {
+            //     std::cout << "!!!!!! WARNING: semantic_color or semantic image is empty !!!!!!" << std::endl;
+            //     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_null(new pcl::PointCloud<pcl::PointXYZRGBA>());
+            //     return cloud_null;
+            // }
+            // Deal with color
+            // if ((int)semantic.ptr<uchar>(m)[n] == 0)
+            // {
+            //     p.b = color.ptr<uchar>(m)[n * 3];
+            //     p.g = color.ptr<uchar>(m)[n * 3 + 1];
+            //     p.r = color.ptr<uchar>(m)[n * 3 + 2];
+            // }
+            // else
+            // {
+            //     p.b = semantic_color.ptr<uchar>(m)[n * 3];
+            //     p.g = semantic_color.ptr<uchar>(m)[n * 3 + 1];
+            //     p.r = semantic_color.ptr<uchar>(m)[n * 3 + 2];
+            // }
+            // tmp->points.push_back(p);
+            // }
+            if (semantic_row >= 0 && semantic_row < semantic.rows && semantic_col >= 0 && semantic_col < semantic.cols)
             {
-                p.b = color.ptr<uchar>(m)[n * 3];
-                p.g = color.ptr<uchar>(m)[n * 3 + 1];
-                p.r = color.ptr<uchar>(m)[n * 3 + 2];
+                // semantic画像にアクセスして色を決定
+                if ((int)semantic.ptr<uchar>(semantic_row)[semantic_col] == 0)
+                {
+                    p.b = color.ptr<uchar>(m)[n * 3];
+                    p.g = color.ptr<uchar>(m)[n * 3 + 1];
+                    p.r = color.ptr<uchar>(m)[n * 3 + 2];
+                }
+                else
+                {
+                    // セマンティックカラー画像もスケーリングが必要な場合があるが、まずは元座標で試す
+                    p.b = semantic_color.ptr<uchar>(m)[n * 3];
+                    p.g = semantic_color.ptr<uchar>(m)[n * 3 + 1];
+                    p.r = semantic_color.ptr<uchar>(m)[n * 3 + 2];
+                }
+                tmp->points.push_back(p);
             }
-            else
-            {
-                p.b = semantic_color.ptr<uchar>(m)[n * 3];
-                p.g = semantic_color.ptr<uchar>(m)[n * 3 + 1];
-                p.r = semantic_color.ptr<uchar>(m)[n * 3 + 2];
-            }
-            tmp->points.push_back(p);
         }
     }
 

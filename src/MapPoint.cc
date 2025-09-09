@@ -120,6 +120,11 @@ void MapPoint::AddObservation(KeyFrame* pKF, size_t idx)
         return;
     mObservations[pKF]=idx;
 
+    if(idx < 0 || pKF->mvuRight.size() <= idx) // 2D Monocular observation
+    {
+        return;
+    }
+
     if(pKF->mvuRight[idx]>=0)
         nObs+=2;
     else

@@ -395,9 +395,11 @@ void Frame::ProcessMovingObject(const cv::Mat &imgray)
     // F-Matrix
     cv::Mat mask = cv::Mat(cv::Size(1, 300), CV_8UC1);
     cv::Mat F = cv::findFundamentalMat(F_prepoint, F_nextpoint, mask, cv::FM_RANSAC, 0.1, 0.99);
+    if(F.empty())
+        return;
     for (int i = 0; i < mask.rows; i++)
     {
-        if (mask.at<uchar>(i, 0) == 0)
+        if (mask.at<uchar>(i, 0) == 0 || i >= F_prepoint.size())
             ;
         else
         {
@@ -800,6 +802,9 @@ void Frame::ComputeStereoFromRGBD(const cv::Mat &imDepth)
     }
     std::cout << "----------------------------------------------------" << std::endl;
     // ↑↑↑↑ ここまで挿入 ↑↑↑↑
+
+    if(imDepth.rows == 0 || imDepth.cols == 0)
+        return;
     mvuRight = vector<float>(N, -1);
     mvDepth = vector<float>(N, -1);
 
