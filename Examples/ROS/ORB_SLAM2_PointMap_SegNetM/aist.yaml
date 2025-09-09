@@ -43,7 +43,7 @@ Camera.height: 720
 Camera.bf: 40.0
 
 # Close/Far threshold. Baseline times.
-ThDepth: 40.0
+ThDepth: 2.0
 
 # Deptmap values factor 
 DepthMapFactor: 5000.0
@@ -93,4 +93,4 @@ Viewer.ViewpointX: 0
 Viewer.ViewpointY: -0.7
 Viewer.ViewpointZ: -1.5
 Viewer.ViewpointF: 700
-PointCloudMapping.Resolution: 0.05
+PointCloudMapping.Resolution: 0.01
